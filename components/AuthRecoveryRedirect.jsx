@@ -8,27 +8,57 @@ export default function AuthRecoveryRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    // Check the recovery token BEFORE creating the Supabase client.
-    const hash = window.location.hash;
-
-    if (hash.includes("access_token=")) {
-      window.location.replace("/admin/reset-password");
-      return;
-    }
-
     const supabase = getSupabaseBrowser();
 
     if (!supabase) return;
 
+    let redirected = false;
+
+    const goToReset = () => {
+      if (redirected) return;
+      redirected = true;
+
+      router.replace("/admin/reset-password");
+    };
+
+    // Listen for Supabase password recovery
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") {
-        window.location.replace("/admin/reset-password");
+        goToReset();
       }
     });
 
-    return () => subscription.unsubscribe();
+    // Check the current URL for a recovery link
+    const checkRecoveryUrl = async () => {
+      const hash = window.location.hash;
+      const search = window.location.search;
+
+      const isRecovery =
+        hash.includes("type=recovery") ||
+        search.includes("type=recovery") ||
+        search.includes("code=");
+
+      if (!isRecovery) return;
+
+      // Give Supabase a moment to process the recovery session
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (session) {
+        goToReset();
+      }
+    };
+
+    checkRecoveryUrl();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [router]);
 
   return null;
