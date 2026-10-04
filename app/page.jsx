@@ -2,6 +2,7 @@ import Link from "next/link";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
+import AuthRecoveryRedirect from "@/components/AuthRecoveryRedirect";
 import { InstagramIcon, MailIcon } from "@/components/Icons";
 import { CATEGORIES } from "@/lib/categories";
 import { SITE } from "@/lib/site";
@@ -52,6 +53,7 @@ export default async function HomePage() {
 
   return (
     <>
+    <AuthRecoveryRedirect />
       <Nav />
 
       <main>
