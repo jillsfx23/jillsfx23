@@ -8,26 +8,23 @@ export default function AuthRecoveryRedirect() {
   const router = useRouter();
 
   useEffect(() => {
+    // Check the recovery token BEFORE creating the Supabase client.
+    const hash = window.location.hash;
+
+    if (hash.includes("access_token=")) {
+      window.location.replace("/admin/reset-password");
+      return;
+    }
+
     const supabase = getSupabaseBrowser();
 
     if (!supabase) return;
 
-    const goToResetPassword = () => {
-      window.location.replace("/admin/reset-password");
-    };
-
-    // Recovery link opened with access token in URL
-    if (window.location.hash.includes("access_token=")) {
-      goToResetPassword();
-      return;
-    }
-
-    // Supabase recovery event
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") {
-        goToResetPassword();
+        window.location.replace("/admin/reset-password");
       }
     });
 
