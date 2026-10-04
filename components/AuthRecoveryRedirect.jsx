@@ -12,6 +12,15 @@ export default function AuthRecoveryRedirect() {
 
     if (!supabase) return;
 
+    // Handle recovery link already present in the URL
+    const hash = window.location.hash;
+
+    if (hash.includes("access_token=")) {
+      router.replace("/admin/reset-password");
+      return;
+    }
+
+    // Also handle PASSWORD_RECOVERY event
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event) => {
